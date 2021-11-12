@@ -109,5 +109,5 @@ func main() {
 	router.GET("/", getProduceList)
 	router.POST("/", postProduceItem)
 	router.DELETE("/:produceCode", deleteProduceItem)
-	router.Run("localhost:8080")
+	router.Run("0.0.0.0:4000")
 }
