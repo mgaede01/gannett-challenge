@@ -24,9 +24,21 @@ func getProduceList(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, produceList)
 }
 
+func postProduceItem(c *gin.Context) {
+	var newItem ProduceItem
+
+	if err := c.BindJSON(&newItem); err != nil {
+		return
+	}
+
+	produceList = append(produceList, newItem)
+	c.IndentedJSON(http.StatusCreated, newItem)
+}
+
 func main() {
 	fmt.Println("Starting gin...")
 	router := gin.Default()
 	router.GET("/", getProduceList)
+	router.POST("/", postProduceItem)
 	router.Run("localhost:8080")
 }
