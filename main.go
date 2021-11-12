@@ -2,10 +2,16 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"net/http"
+	"regexp"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
+
+var produceCodeRegex string = "^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$"
+var produceNameRegex string = "^[a-zA-Z0-9 ]*$"
 
 type ProduceItem struct {
 	ProduceCode string  `json:"Produce Code"`
@@ -20,7 +26,21 @@ var produceList = []ProduceItem{
 	{ProduceCode: "TQ4C-VV6T-75ZX-1RMR", Name: "Gala Apple", UnitPrice: 3.59},
 }
 
+func isValidProduceCode(produceCode string) bool {
+	result, _ := regexp.MatchString(produceCodeRegex, produceCode)
+	return result
+}
+
+func isValidProduceName(produceName string) bool {
+	result, _ := regexp.MatchString(produceNameRegex, produceName)
+	return result
+}
+
 func getProduceList(c *gin.Context) {
+	if len(produceList) == 0 {
+		c.String(http.StatusNoContent, "No Produce to display")
+		return
+	}
 	c.IndentedJSON(http.StatusOK, produceList)
 }
 
@@ -30,9 +50,18 @@ func postProduceItem(c *gin.Context) {
 	if err := c.BindJSON(&newItem); err != nil {
 		return
 	}
+	newItem.ProduceCode = strings.ToUpper(newItem.ProduceCode)
+	if !isValidProduceCode(newItem.ProduceCode) {
+		c.String(http.StatusBadRequest, "Bad Produce Code\n")
+		return
+	}
+	if !isValidProduceName(newItem.Name) {
+		c.String(http.StatusBadRequest, "Bad Produce Name\n")
+		return
+	}
+	newItem.UnitPrice = math.Round(newItem.UnitPrice*100) / 100
 	// Check if item already exists
-	for i, item := range produceList {
-		_ = i
+	for _, item := range produceList {
 		if newItem == item {
 			c.String(http.StatusBadRequest, "Item already exists\n")
 			return
@@ -54,6 +83,12 @@ func deleteProduceItem(c *gin.Context) {
 	index := -1
 
 	produceCode = c.Param("produceCode")
+	produceCode = strings.ToUpper(produceCode)
+	if !isValidProduceCode(produceCode) {
+		c.String(http.StatusBadRequest, "Bad Produce Code\n")
+		return
+	}
+
 	// Search for Produce Code in list
 	for i, item := range produceList {
 		if item.ProduceCode == produceCode {

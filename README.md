@@ -8,4 +8,5 @@ Look at https://github.com/gin-gonic/gin for installation details
 ## Assumptions
  - Order of the list does not matter
  - List items have unique identifiers, therefore the list should not contain duplicates
- 
+ - Produce names may contain spaces
+ - Unit prices may be rounded to the nearest cent
